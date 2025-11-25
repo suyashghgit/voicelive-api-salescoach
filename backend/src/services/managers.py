@@ -16,7 +16,6 @@ from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
 
 from src.config import config
-from src.services.graph_scenario_generator import GraphScenarioGenerator
 from src.services.scenario_utils import determine_scenario_directory
 
 # Constants
@@ -44,7 +43,6 @@ class ScenarioManager:
         """
         self.scenario_dir = determine_scenario_directory(scenario_dir)
         self.scenarios = self._load_scenarios()
-        self.graph_generator = GraphScenarioGenerator()
         self.generated_scenarios: Dict[str, Any] = {}
 
     def _load_scenarios(self) -> Dict[str, Any]:
@@ -115,32 +113,7 @@ class ScenarioManager:
             for scenario_id, scenario_data in self.scenarios.items()
         ]
 
-        scenarios.append(
-            {
-                "id": "graph-api",
-                "name": "Personalized Scenario",
-                "description": "AI-generated scenario based on your upcoming meetings and context from Microsoft Graph",
-                "is_graph_scenario": True,
-            }
-        )
-
         return scenarios
-
-    def generate_scenario_from_graph(self, graph_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Generate a scenario based on Microsoft Graph API data.
-
-        Args:
-            graph_data: The Graph API response data
-
-        Returns:
-            Dict[str, Any]: Generated scenario
-        """
-        scenario = self.graph_generator.generate_scenario_from_graph(graph_data)
-
-        self.generated_scenarios[scenario["id"]] = scenario
-
-        return scenario
 
     def customize_scenario(self, scenario_id: str, resume_content: str, job_description: str) -> Dict[str, Any]:
         """

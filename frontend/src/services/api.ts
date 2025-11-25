@@ -56,15 +56,6 @@ export const api = {
     return res.json()
   },
 
-  async generateGraphScenario(): Promise<Scenario> {
-    const res = await fetch('/api/scenarios/graph', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    })
-    if (!res.ok) throw new Error('Failed to generate Graph scenario')
-    return res.json()
-  },
-
   async customizeScenario(
     scenarioId: string,
     resumeContent: string,

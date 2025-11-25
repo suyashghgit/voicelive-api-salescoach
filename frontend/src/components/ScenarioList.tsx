@@ -7,7 +7,6 @@ import {
   Button,
   Card,
   CardHeader,
-  Spinner,
   Text,
   makeStyles,
   tokens,
@@ -54,19 +53,6 @@ const useStyles = makeStyles({
     justifyContent: 'flex-end',
     marginTop: tokens.spacingVerticalL,
   },
-  loadingCard: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '120px',
-    textAlign: 'center',
-    gap: tokens.spacingVerticalM,
-  },
-  graphIcon: {
-    fontSize: '24px',
-    marginRight: tokens.spacingHorizontalS,
-  },
 })
 
 interface Props {
@@ -85,7 +71,6 @@ export function ScenarioList({
   onScenarioGenerated,
 }: Props) {
   const styles = useStyles()
-  const [loadingGraph, setLoadingGraph] = useState(false)
   const [generatedScenario, setGeneratedScenario] = useState<Scenario | null>(
     null
   )
@@ -95,24 +80,7 @@ export function ScenarioList({
   const [jobDescContent, setJobDescContent] = useState<string>('')
 
   const handleScenarioClick = async (scenario: Scenario) => {
-    if (scenario.is_graph_scenario && !scenario.generated_from_graph) {
-      setLoadingGraph(true)
-      try {
-        const generated = await api.generateGraphScenario()
-        const personalizedScenario = {
-          ...generated,
-          name: 'Personalized Scenario',
-          description: generated.description.split('.')[0] + '.',
-        }
-        setGeneratedScenario(personalizedScenario)
-        onScenarioGenerated?.(personalizedScenario)
-        onSelect(personalizedScenario.id)
-      } catch (error) {
-        console.error('Failed to generate Graph scenario:', error)
-      } finally {
-        setLoadingGraph(false)
-      }
-    } else if (scenario.id === 'scenario4' && !scenario.generated_from_graph) {
+    if (scenario.id === 'scenario4' && !scenario.generated_from_graph) {
       // Show file upload for the recruiter scenario
       setShowFileUpload(true)
       onSelect(scenario.id)
@@ -157,7 +125,7 @@ export function ScenarioList({
 
   // Build the complete scenario list
   const allScenarios = generatedScenario
-    ? [...scenarios.filter(s => !s.is_graph_scenario), generatedScenario]
+    ? [generatedScenario]
     : scenarios
 
   return (
@@ -198,24 +166,6 @@ export function ScenarioList({
           <div className={styles.cardsGrid}>
             {allScenarios.map(scenario => {
               const isSelected = selectedScenario === scenario.id
-              const isGraphLoading =
-                scenario.is_graph_scenario &&
-                loadingGraph &&
-                !scenario.generated_from_graph
-
-              if (isGraphLoading) {
-                return (
-                  <Card key="graph-loading" className={styles.card}>
-                    <div className={styles.loadingCard}>
-                      <Spinner size="medium" />
-                      <Text size={300}>
-                        Analyzing your calendar and generating personalized
-                        scenario...
-                      </Text>
-                    </div>
-                  </Card>
-                )
-              }
 
               return (
                 <Card
@@ -226,10 +176,6 @@ export function ScenarioList({
                   <CardHeader
                     header={
                       <Text weight="semibold">
-                        {(scenario.is_graph_scenario ||
-                          scenario.generated_from_graph) && (
-                          <span className={styles.graphIcon}>✨</span>
-                        )}
                         {scenario.name}
                       </Text>
                     }
@@ -242,7 +188,7 @@ export function ScenarioList({
           <div className={styles.actions}>
             <Button
               appearance="primary"
-              disabled={!selectedScenario || loadingGraph || selectedScenario === 'scenario4'}
+              disabled={!selectedScenario || selectedScenario === 'scenario4'}
               onClick={onStart}
               size="large"
             >

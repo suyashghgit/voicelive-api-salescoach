@@ -6,10 +6,8 @@
 """Flask application for the upskilling agent."""
 
 import asyncio
-import json
 import logging
 import os
-import time
 from pathlib import Path
 from typing import Any, Dict, List, cast
 
@@ -34,7 +32,6 @@ API_CONFIG_ENDPOINT = "/api/config"
 API_SCENARIOS_ENDPOINT = "/api/scenarios"
 API_AGENTS_CREATE_ENDPOINT = "/api/agents/create"
 API_ANALYZE_ENDPOINT = "/api/analyze"
-API_GRAPH_SCENARIO_ENDPOINT = "/api/scenarios/graph"
 API_CUSTOMIZE_SCENARIO_ENDPOINT = "/api/scenarios/customize"
 
 # Error messages
@@ -213,34 +210,6 @@ def voice_proxy(ws: simple_websocket.ws.Server):
         asyncio.set_event_loop(loop)
 
     loop.run_until_complete(voice_proxy_handler.handle_connection(ws))
-
-
-@app.route(API_GRAPH_SCENARIO_ENDPOINT, methods=["POST"])
-def generate_graph_scenario():
-    """Generate a scenario based on Graph API data."""
-
-    # Simulate API delay
-    time.sleep(2)
-
-    try:
-        docker_canned_file = Path("/app/data/graph-api-canned.json")
-        dev_canned_file = Path(__file__).parent.parent.parent / "data" / "graph-api-canned.json"
-
-        canned_file = docker_canned_file if docker_canned_file.exists() else dev_canned_file
-
-        if not canned_file.exists():
-            logger.error("Canned Graph API file not found at %s", canned_file)
-            graph_data: Dict[str, Any] = {"value": []}
-        else:
-            with open(canned_file, encoding="utf-8") as f:
-                graph_data = json.load(f)
-
-        scenario = scenario_manager.generate_scenario_from_graph(graph_data)
-
-        return jsonify(scenario)
-    except Exception as e:
-        logger.error("Failed to generate Graph scenario: %s", e)
-        return jsonify({"error": str(e)}), HTTP_INTERNAL_SERVER_ERROR
 
 
 @app.route(API_CUSTOMIZE_SCENARIO_ENDPOINT, methods=["POST"])
