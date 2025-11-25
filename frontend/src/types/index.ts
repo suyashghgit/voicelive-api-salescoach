@@ -9,6 +9,8 @@ export interface Scenario {
   description: string
   is_graph_scenario?: boolean
   generated_from_graph?: boolean
+  requires_files?: boolean
+  file_types?: string[]
 }
 
 export interface Message {

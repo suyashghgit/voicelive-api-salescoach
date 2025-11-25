@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Scenario, Assessment } from '../types'
+import { Assessment, Scenario } from '../types'
 
 function extractUserText(conversationMessages: any[]): string {
   return conversationMessages
@@ -62,6 +62,24 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
     })
     if (!res.ok) throw new Error('Failed to generate Graph scenario')
+    return res.json()
+  },
+
+  async customizeScenario(
+    scenarioId: string,
+    resumeContent: string,
+    jobDescription: string
+  ): Promise<Scenario> {
+    const res = await fetch('/api/scenarios/customize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        scenario_id: scenarioId,
+        resume_content: resumeContent,
+        job_description: jobDescription,
+      }),
+    })
+    if (!res.ok) throw new Error('Failed to customize scenario')
     return res.json()
   },
 }

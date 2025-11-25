@@ -142,6 +142,40 @@ class ScenarioManager:
 
         return scenario
 
+    def customize_scenario(self, scenario_id: str, resume_content: str, job_description: str) -> Dict[str, Any]:
+        """
+        Customize a scenario with user-provided context.
+
+        Args:
+            scenario_id: The base scenario identifier
+            resume_content: The candidate's resume content
+            job_description: The job description content
+
+        Returns:
+            Dict[str, Any]: Customized scenario
+        """
+        base_scenario = self.scenarios.get(scenario_id)
+        if not base_scenario:
+            raise ValueError(f"Base scenario '{scenario_id}' not found")
+
+        # Create a customized copy
+        customized_scenario = base_scenario.copy()
+        customized_id = f"{scenario_id}-customized-{uuid.uuid4().hex[:8]}"
+        customized_scenario["id"] = customized_id
+
+        # Replace placeholders in the system message
+        if "messages" in customized_scenario and customized_scenario["messages"]:
+            system_message = customized_scenario["messages"][0].get("content", "")
+            system_message = system_message.replace("{{resume_content}}", f"\n\nCANDIDATE'S RESUME:\n{resume_content}")
+            system_message = system_message.replace("{{job_description}}", f"\n\nJOB DESCRIPTION:\n{job_description}")
+            customized_scenario["messages"][0]["content"] = system_message
+
+        # Store the customized scenario
+        self.generated_scenarios[customized_id] = customized_scenario
+
+        logger.info("Customized scenario created: %s", customized_id)
+        return customized_scenario
+
 
 class AgentManager:
     """Manages virtual training agents."""

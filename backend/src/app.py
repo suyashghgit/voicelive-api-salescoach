@@ -35,6 +35,7 @@ API_SCENARIOS_ENDPOINT = "/api/scenarios"
 API_AGENTS_CREATE_ENDPOINT = "/api/agents/create"
 API_ANALYZE_ENDPOINT = "/api/analyze"
 API_GRAPH_SCENARIO_ENDPOINT = "/api/scenarios/graph"
+API_CUSTOMIZE_SCENARIO_ENDPOINT = "/api/scenarios/customize"
 
 # Error messages
 SCENARIO_ID_REQUIRED = "scenario_id is required"
@@ -239,6 +240,26 @@ def generate_graph_scenario():
         return jsonify(scenario)
     except Exception as e:
         logger.error("Failed to generate Graph scenario: %s", e)
+        return jsonify({"error": str(e)}), HTTP_INTERNAL_SERVER_ERROR
+
+
+@app.route(API_CUSTOMIZE_SCENARIO_ENDPOINT, methods=["POST"])
+def customize_scenario():
+    """Customize a scenario with user-provided context (e.g., resume and job description)."""
+    try:
+        data = cast(Dict[str, Any], request.json)
+        scenario_id = data.get("scenario_id")
+        resume_content = data.get("resume_content", "")
+        job_description = data.get("job_description", "")
+
+        if not scenario_id:
+            return jsonify({"error": "scenario_id is required"}), HTTP_BAD_REQUEST
+
+        scenario = scenario_manager.customize_scenario(scenario_id, resume_content, job_description)
+
+        return jsonify(scenario)
+    except Exception as e:
+        logger.error("Failed to customize scenario: %s", e)
         return jsonify({"error": str(e)}), HTTP_INTERNAL_SERVER_ERROR
 
 
