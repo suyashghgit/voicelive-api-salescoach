@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-    Dialog,
-    DialogBody,
-    DialogSurface,
-    Spinner,
-    Text,
-    makeStyles,
-    tokens,
+  Dialog,
+  DialogBody,
+  DialogSurface,
+  Spinner,
+  Text,
+  makeStyles,
+  tokens,
 } from '@fluentui/react-components'
 import { useCallback, useState } from 'react'
 import { AssessmentPanel } from '../components/AssessmentPanel'
@@ -45,6 +45,12 @@ const useStyles = makeStyles({
   setupDialog: {
     maxWidth: '600px',
     width: '90vw',
+    transition: 'max-width 0.3s ease-in-out',
+  },
+  setupDialogWide: {
+    maxWidth: '1000px',
+    width: '90vw',
+    transition: 'max-width 0.3s ease-in-out',
   },
   loadingContent: {
     gridColumn: '1 / -1',
@@ -190,7 +196,13 @@ export default function App() {
         open={showSetup}
         onOpenChange={(_, data) => setShowSetup(data.open)}
       >
-        <DialogSurface className={styles.setupDialog}>
+        <DialogSurface
+          className={
+            selectedScenario === 'scenario4'
+              ? styles.setupDialogWide
+              : styles.setupDialog
+          }
+        >
           <DialogBody>
             {loading ? (
               <Spinner label="Loading scenarios..." />

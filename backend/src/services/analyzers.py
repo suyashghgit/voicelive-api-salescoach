@@ -136,8 +136,20 @@ class ConversationAnalyzer:
 
         evaluation_scenario = self.evaluation_scenarios.get(scenario_id)
         if not evaluation_scenario:
-            logger.error("Evaluation scenario not found: %s", scenario_id)
-            return None
+            # Try to find base scenario if it's a customized one
+            if "-customized-" in scenario_id:
+                base_scenario_id = scenario_id.split("-customized-")[0]
+                evaluation_scenario = self.evaluation_scenarios.get(base_scenario_id)
+                if evaluation_scenario:
+                    logger.info(
+                        "Using base evaluation scenario %s for customized scenario %s",
+                        base_scenario_id,
+                        scenario_id,
+                    )
+
+            if not evaluation_scenario:
+                logger.error("Evaluation scenario not found: %s", scenario_id)
+                return None
 
         if not self.openai_client:
             logger.error("OpenAI client not configured")

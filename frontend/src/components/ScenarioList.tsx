@@ -129,7 +129,7 @@ export function ScenarioList({
     : scenarios
 
   return (
-    <>
+    <div className={styles.container}>
       <Text className={styles.header} size={500} weight="semibold">
         Select Training Scenario
       </Text>
@@ -197,6 +197,6 @@ export function ScenarioList({
           </div>
         </>
       )}
-    </>
+    </div>
   )
 }

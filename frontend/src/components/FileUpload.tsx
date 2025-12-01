@@ -4,12 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-    Button,
-    Card,
-    Text,
-    Textarea,
-    makeStyles,
-    tokens,
+  Button,
+  Card,
+  Text,
+  Textarea,
+  makeStyles,
+  tokens,
 } from '@fluentui/react-components'
 import { useState } from 'react'
 
@@ -19,6 +19,8 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     gap: tokens.spacingVerticalM,
     padding: tokens.spacingVerticalL,
+    width: '100%',
+    boxSizing: 'border-box',
   },
   grid: {
     display: 'grid',
