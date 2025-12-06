@@ -3,25 +3,25 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import React, { useState, useCallback } from 'react'
 import {
   Dialog,
-  DialogSurface,
   DialogBody,
+  DialogSurface,
   Spinner,
   Text,
   makeStyles,
   tokens,
 } from '@fluentui/react-components'
+import { useCallback, useState } from 'react'
+import { AssessmentPanel } from '../components/AssessmentPanel'
+import { ChatPanel } from '../components/ChatPanel'
 import { ScenarioList } from '../components/ScenarioList'
 import { VideoPanel } from '../components/VideoPanel'
-import { ChatPanel } from '../components/ChatPanel'
-import { AssessmentPanel } from '../components/AssessmentPanel'
-import { useScenarios } from '../hooks/useScenarios'
-import { useRealtime } from '../hooks/useRealtime'
-import { useWebRTC } from '../hooks/useWebRTC'
-import { useRecorder } from '../hooks/useRecorder'
 import { useAudioPlayer } from '../hooks/useAudioPlayer'
+import { useRealtime } from '../hooks/useRealtime'
+import { useRecorder } from '../hooks/useRecorder'
+import { useScenarios } from '../hooks/useScenarios'
+import { useWebRTC } from '../hooks/useWebRTC'
 import { api } from '../services/api'
 import { Assessment } from '../types'
 
@@ -45,6 +45,12 @@ const useStyles = makeStyles({
   setupDialog: {
     maxWidth: '600px',
     width: '90vw',
+    transition: 'max-width 0.3s ease-in-out',
+  },
+  setupDialogWide: {
+    maxWidth: '1000px',
+    width: '90vw',
+    transition: 'max-width 0.3s ease-in-out',
   },
   loadingContent: {
     gridColumn: '1 / -1',
@@ -68,7 +74,7 @@ export default function App() {
 
   const { scenarios, selectedScenario, setSelectedScenario, loading } =
     useScenarios()
-  const { playAudio } = useAudioPlayer()
+  const { playAudio, ensureAudioEnabled } = useAudioPlayer()
   const activeScenario =
     selectedScenarioData ||
     scenarios.find(s => s.id === selectedScenario) ||
@@ -129,6 +135,14 @@ export default function App() {
   const { recording, toggleRecording, getAudioRecording } =
     useRecorder(sendAudioChunk)
 
+  const handleToggleRecording = useCallback(async () => {
+    // Ensure audio is enabled when starting to record
+    if (!recording) {
+      await ensureAudioEnabled()
+    }
+    toggleRecording()
+  }, [recording, ensureAudioEnabled, toggleRecording])
+
   const handleStart = async () => {
     if (!selectedScenario) return
 
@@ -182,7 +196,13 @@ export default function App() {
         open={showSetup}
         onOpenChange={(_, data) => setShowSetup(data.open)}
       >
-        <DialogSurface className={styles.setupDialog}>
+        <DialogSurface
+          className={
+            selectedScenario === 'scenario4'
+              ? styles.setupDialogWide
+              : styles.setupDialog
+          }
+        >
           <DialogBody>
             {loading ? (
               <Spinner label="Loading scenarios..." />
@@ -238,7 +258,7 @@ export default function App() {
             recording={recording}
             connected={connected}
             canAnalyze={messages.length > 0}
-            onToggleRecording={toggleRecording}
+            onToggleRecording={handleToggleRecording}
             onClear={clearMessages}
             onAnalyze={handleAnalyze}
             scenario={activeScenario}

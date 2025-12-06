@@ -6,10 +6,8 @@
 """Flask application for the upskilling agent."""
 
 import asyncio
-import json
 import logging
 import os
-import time
 from pathlib import Path
 from typing import Any, Dict, List, cast
 
@@ -34,7 +32,7 @@ API_CONFIG_ENDPOINT = "/api/config"
 API_SCENARIOS_ENDPOINT = "/api/scenarios"
 API_AGENTS_CREATE_ENDPOINT = "/api/agents/create"
 API_ANALYZE_ENDPOINT = "/api/analyze"
-API_GRAPH_SCENARIO_ENDPOINT = "/api/scenarios/graph"
+API_CUSTOMIZE_SCENARIO_ENDPOINT = "/api/scenarios/customize"
 
 # Error messages
 SCENARIO_ID_REQUIRED = "scenario_id is required"
@@ -214,31 +212,23 @@ def voice_proxy(ws: simple_websocket.ws.Server):
     loop.run_until_complete(voice_proxy_handler.handle_connection(ws))
 
 
-@app.route(API_GRAPH_SCENARIO_ENDPOINT, methods=["POST"])
-def generate_graph_scenario():
-    """Generate a scenario based on Graph API data."""
-
-    # Simulate API delay
-    time.sleep(2)
-
+@app.route(API_CUSTOMIZE_SCENARIO_ENDPOINT, methods=["POST"])
+def customize_scenario():
+    """Customize a scenario with user-provided context (e.g., resume and job description)."""
     try:
-        docker_canned_file = Path("/app/data/graph-api-canned.json")
-        dev_canned_file = Path(__file__).parent.parent.parent / "data" / "graph-api-canned.json"
+        data = cast(Dict[str, Any], request.json)
+        scenario_id = data.get("scenario_id")
+        resume_content = data.get("resume_content", "")
+        job_description = data.get("job_description", "")
 
-        canned_file = docker_canned_file if docker_canned_file.exists() else dev_canned_file
+        if not scenario_id:
+            return jsonify({"error": "scenario_id is required"}), HTTP_BAD_REQUEST
 
-        if not canned_file.exists():
-            logger.error("Canned Graph API file not found at %s", canned_file)
-            graph_data: Dict[str, Any] = {"value": []}
-        else:
-            with open(canned_file, encoding="utf-8") as f:
-                graph_data = json.load(f)
-
-        scenario = scenario_manager.generate_scenario_from_graph(graph_data)
+        scenario = scenario_manager.customize_scenario(scenario_id, resume_content, job_description)
 
         return jsonify(scenario)
     except Exception as e:
-        logger.error("Failed to generate Graph scenario: %s", e)
+        logger.error("Failed to customize scenario: %s", e)
         return jsonify({"error": str(e)}), HTTP_INTERNAL_SERVER_ERROR
 
 

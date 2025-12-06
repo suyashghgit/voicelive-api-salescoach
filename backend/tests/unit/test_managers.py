@@ -61,16 +61,13 @@ class TestScenarioManager:
         """Test listing scenarios."""
         manager = ScenarioManager()
         manager.scenarios = {
-            "scenario1": {"name": "Scenario 1", "description": "First scenario"},
-            "scenario2": {"name": "Scenario 2", "description": "Second scenario"},
+            "scenario4": {"name": "Suyash Consulting - Interview Role-Play", "description": "Interview scenario"},
         }
 
         scenarios = manager.list_scenarios()
-        assert len(scenarios) == 3
-        assert scenarios[0]["id"] == "scenario1"
-        assert scenarios[1]["id"] == "scenario2"
-        assert scenarios[2]["id"] == "graph-api"
-        assert scenarios[2]["is_graph_scenario"] is True
+        assert len(scenarios) == 1
+        assert scenarios[0]["id"] == "scenario4"
+        assert scenarios[0]["name"] == "Suyash Consulting - Interview Role-Play"
 
 
 class TestAgentManager:

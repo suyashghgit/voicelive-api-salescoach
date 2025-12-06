@@ -16,7 +16,6 @@ from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
 
 from src.config import config
-from src.services.graph_scenario_generator import GraphScenarioGenerator
 from src.services.scenario_utils import determine_scenario_directory
 
 # Constants
@@ -44,7 +43,6 @@ class ScenarioManager:
         """
         self.scenario_dir = determine_scenario_directory(scenario_dir)
         self.scenarios = self._load_scenarios()
-        self.graph_generator = GraphScenarioGenerator()
         self.generated_scenarios: Dict[str, Any] = {}
 
     def _load_scenarios(self) -> Dict[str, Any]:
@@ -115,32 +113,41 @@ class ScenarioManager:
             for scenario_id, scenario_data in self.scenarios.items()
         ]
 
-        scenarios.append(
-            {
-                "id": "graph-api",
-                "name": "Personalized Scenario",
-                "description": "AI-generated scenario based on your upcoming meetings and context from Microsoft Graph",
-                "is_graph_scenario": True,
-            }
-        )
-
         return scenarios
 
-    def generate_scenario_from_graph(self, graph_data: Dict[str, Any]) -> Dict[str, Any]:
+    def customize_scenario(self, scenario_id: str, resume_content: str, job_description: str) -> Dict[str, Any]:
         """
-        Generate a scenario based on Microsoft Graph API data.
+        Customize a scenario with user-provided context.
 
         Args:
-            graph_data: The Graph API response data
+            scenario_id: The base scenario identifier
+            resume_content: The candidate's resume content
+            job_description: The job description content
 
         Returns:
-            Dict[str, Any]: Generated scenario
+            Dict[str, Any]: Customized scenario
         """
-        scenario = self.graph_generator.generate_scenario_from_graph(graph_data)
+        base_scenario = self.scenarios.get(scenario_id)
+        if not base_scenario:
+            raise ValueError(f"Base scenario '{scenario_id}' not found")
 
-        self.generated_scenarios[scenario["id"]] = scenario
+        # Create a customized copy
+        customized_scenario = base_scenario.copy()
+        customized_id = f"{scenario_id}-customized-{uuid.uuid4().hex[:8]}"
+        customized_scenario["id"] = customized_id
 
-        return scenario
+        # Replace placeholders in the system message
+        if "messages" in customized_scenario and customized_scenario["messages"]:
+            system_message = customized_scenario["messages"][0].get("content", "")
+            system_message = system_message.replace("{{resume_content}}", f"\n\nCANDIDATE'S RESUME:\n{resume_content}")
+            system_message = system_message.replace("{{job_description}}", f"\n\nJOB DESCRIPTION:\n{job_description}")
+            customized_scenario["messages"][0]["content"] = system_message
+
+        # Store the customized scenario
+        self.generated_scenarios[customized_id] = customized_scenario
+
+        logger.info("Customized scenario created: %s", customized_id)
+        return customized_scenario
 
 
 class AgentManager:

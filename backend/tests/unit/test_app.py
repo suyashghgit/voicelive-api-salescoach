@@ -51,8 +51,7 @@ class TestFlaskApp:
     def test_get_scenarios_route(self, mock_scenario_manager):
         """Test the /api/scenarios endpoint."""
         mock_scenarios = [
-            {"id": "scenario1", "name": "Test Scenario 1"},
-            {"id": "scenario2", "name": "Test Scenario 2"},
+            {"id": "scenario4", "name": "Suyash Consulting - Interview Role-Play"},
         ]
         mock_scenario_manager.list_scenarios.return_value = mock_scenarios
 
