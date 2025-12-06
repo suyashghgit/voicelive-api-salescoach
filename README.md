@@ -97,6 +97,55 @@ Visit `http://localhost:8000` to start training!
 
 ## Architecture
 
+```mermaid
+graph TD
+    subgraph Client_Side [Client Side]
+        User[User]
+        Frontend[React Frontend<br/>(Vite + TypeScript)]
+    end
+
+    subgraph Azure_Cloud [Azure Cloud]
+        subgraph Compute [Compute & Hosting]
+            ACA[Azure Container App<br/>(Python Flask Backend)]
+            ACR[Azure Container Registry]
+        end
+
+        subgraph AI_Services [Azure AI Services]
+            AIFoundry[Azure AI Foundry<br/>(AI Project & Agents)]
+            OpenAI[Azure OpenAI Service<br/>(GPT-4o, Embeddings)]
+            Speech[Azure AI Speech<br/>(Real-time Voice Agent)]
+        end
+
+        subgraph Identity [Security]
+            MI[Managed Identity]
+        end
+    end
+
+    %% Client Interactions
+    User -->|Interacts| Frontend
+    Frontend -->|HTTP API /api/*| ACA
+    Frontend -->|WebSocket /ws/voice| ACA
+
+    %% Backend Logic
+    ACA -->|Pulls Image| ACR
+    ACA -->|Manages Agents| AIFoundry
+    ACA -->|Proxies Voice Stream| Speech
+    ACA -->|Analyzes Performance| OpenAI
+
+    %% Service Connections
+    AIFoundry -->|Uses Model| OpenAI
+    Speech -->|Uses Model| OpenAI
+
+    %% Security
+    ACA -.->|Authenticates via| MI
+    MI -.->|Access| AIFoundry
+    MI -.->|Access| Speech
+    MI -.->|Access| OpenAI
+
+    %% Data Flow Details
+    note_ws[WebSocket Proxy<br/>Client <-> Backend <-> Speech Service]
+    ACA --- note_ws
+
 <table>
 <tr>
 <td width="400">
